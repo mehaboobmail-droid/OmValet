@@ -8,11 +8,12 @@ import { LoadingScreen } from "@/components/brand/LoadingScreen";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { AccessDenied } from "@/components/auth/AccessDenied";
 import { useAuth } from "@/hooks/useAuth";
 import { signInStaff } from "@/services/auth";
 
 export default function LoginPage() {
-  const { status } = useAuth();
+  const { status, isStaff } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -20,10 +21,11 @@ export default function LoginPage() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
-  // Already signed in (or becomes signed in after submit) → portal.
+  // Only provisioned staff advance to the portal; a signed-in non-staff user
+  // stays here and sees the access notice (no redirect loop with the guard).
   useEffect(() => {
-    if (status === "signedIn") router.replace("/portal");
-  }, [status, router]);
+    if (status === "signedIn" && isStaff) router.replace("/portal");
+  }, [status, isStaff, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,6 +42,11 @@ export default function LoginPage() {
       setError(err instanceof Error ? err.message : "Invalid email or password");
       setPending(false);
     }
+  }
+
+  // Signed in but not provisioned staff — show the access notice here too.
+  if (status === "signedIn" && !isStaff) {
+    return <AccessDenied />;
   }
 
   // Branded overlay while auth state resolves or a redirect is in flight.

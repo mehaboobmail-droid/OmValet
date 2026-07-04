@@ -10,6 +10,12 @@ import type { StaffProfile, StaffRole } from "@/types/domain";
 
 export interface StaffIdentity {
   role: StaffRole;
+  /**
+   * Whether this account is provisioned staff. True only for admins or users
+   * with a `valets/{uid}` profile — authenticating alone is not enough, so a
+   * self-registered stranger cannot reach the portal.
+   */
+  isStaff: boolean;
   profile: StaffProfile | null;
   displayName: string;
 }
@@ -17,6 +23,7 @@ export interface StaffIdentity {
 /**
  * Resolve role + profile for a signed-in user.
  * Role rule (legacy-compatible): `admins/{uid} === true` → admin, else valet.
+ * Staff membership additionally requires the admin flag or a staff profile.
  */
 export async function fetchStaffIdentity(user: User): Promise<StaffIdentity> {
   const db = clientDb();
@@ -25,11 +32,12 @@ export async function fetchStaffIdentity(user: User): Promise<StaffIdentity> {
     get(ref(db, dbPaths.staffProfile(user.uid))),
   ]);
 
-  const role: StaffRole = adminSnap.val() === true ? "admin" : "valet";
+  const isAdmin = adminSnap.val() === true;
   const profile = (profileSnap.val() as StaffProfile | null) ?? null;
 
   return {
-    role,
+    role: isAdmin ? "admin" : "valet",
+    isStaff: isAdmin || profile !== null,
     profile,
     displayName: profile?.name || user.email || "Staff",
   };

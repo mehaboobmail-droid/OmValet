@@ -7,13 +7,14 @@ import { useAuth } from "@/hooks/useAuth";
 
 /** Entry point — routes to the portal or login based on auth state. */
 export default function Home() {
-  const { status } = useAuth();
+  const { status, isStaff } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "signedIn") router.replace("/portal");
+    // Non-staff signed-in users go to /login, which shows the access notice.
+    if (status === "signedIn") router.replace(isStaff ? "/portal" : "/login");
     if (status === "signedOut") router.replace("/login");
-  }, [status, router]);
+  }, [status, isStaff, router]);
 
   return <LoadingScreen show tagline="Premium Car Management" />;
 }

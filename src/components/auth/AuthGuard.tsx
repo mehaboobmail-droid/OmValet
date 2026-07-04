@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LoadingScreen } from "@/components/brand/LoadingScreen";
 import { useAuth } from "@/hooks/useAuth";
+import { AccessDenied } from "./AccessDenied";
 
 interface AuthGuardProps {
   /** When true, valets are bounced back to /portal. */
@@ -13,26 +14,29 @@ interface AuthGuardProps {
 
 /**
  * Client-side route guard for staff areas.
- * Shows the branded loading screen while auth resolves; redirects to /login
- * when signed out (legacy portal behaviour).
+ * - Signed out → redirect to /login.
+ * - Signed in but not staff → "Access not authorized" (no redirect loop).
+ * - Admin-only area + non-admin → bounce to /portal.
  */
 export function AuthGuard({ requireAdmin = false, children }: AuthGuardProps) {
-  const { status, role } = useAuth();
+  const { status, role, isStaff } = useAuth();
   const router = useRouter();
 
-  const denied =
-    status === "signedOut" ||
-    (requireAdmin && status === "signedIn" && role !== "admin");
+  const notStaff = status === "signedIn" && !isStaff;
+  const wrongRole =
+    requireAdmin && status === "signedIn" && isStaff && role !== "admin";
 
   useEffect(() => {
     if (status === "signedOut") {
       router.replace("/login");
-    } else if (requireAdmin && status === "signedIn" && role !== "admin") {
+    } else if (wrongRole) {
       router.replace("/portal");
     }
-  }, [status, role, requireAdmin, router]);
+  }, [status, wrongRole, router]);
 
-  if (status !== "signedIn" || denied) {
+  if (notStaff) return <AccessDenied />;
+
+  if (status !== "signedIn" || wrongRole) {
     return <LoadingScreen show tagline="Portal" />;
   }
 

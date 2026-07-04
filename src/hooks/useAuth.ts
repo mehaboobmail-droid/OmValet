@@ -17,6 +17,8 @@ interface AuthState {
   status: AuthStatus;
   user: AuthUser | null;
   role: StaffRole | null;
+  /** True only for provisioned staff (admin flag or a staff profile). */
+  isStaff: boolean;
   profile: StaffProfile | null;
   displayName: string;
 }
@@ -25,6 +27,7 @@ export const useAuthStore = create<AuthState>(() => ({
   status: "initializing",
   user: null,
   role: null,
+  isStaff: false,
   profile: null,
   displayName: "",
 }));
@@ -45,6 +48,7 @@ export function startAuthListener(): void {
         status: "signedOut",
         user: null,
         role: null,
+        isStaff: false,
         profile: null,
         displayName: "",
       });
@@ -57,15 +61,18 @@ export function startAuthListener(): void {
         status: "signedIn",
         user: { uid: user.uid, email: user.email },
         role: identity.role,
+        isStaff: identity.isStaff,
         profile: identity.profile,
         displayName: identity.displayName,
       });
     } catch {
-      // Identity lookup failed (network/rules) — treat as least privilege.
+      // Identity lookup failed (network/rules) — fail closed: signed in but
+      // not treated as staff, so access is denied until it can be verified.
       useAuthStore.setState({
         status: "signedIn",
         user: { uid: user.uid, email: user.email },
         role: "valet",
+        isStaff: false,
         profile: null,
         displayName: user.email ?? "Staff",
       });

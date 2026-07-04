@@ -12,6 +12,22 @@ The app now targets the fresh **`wallet-parking`** Firebase project
   (**rotate its password immediately** — change it via the staff Edit modal
   or Firebase Console → Authentication).
 
+### Creating the first admin on a brand-new project
+
+This portal has **no public sign-up** (by design — staff-only, like the
+legacy app). The first admin is provisioned out-of-band with the Admin SDK:
+
+```bash
+npm run bootstrap:admin -- your-admin@example.com "a-strong-password"
+```
+
+It reads `FIREBASE_SERVICE_ACCOUNT` + `NEXT_PUBLIC_FIREBASE_DATABASE_URL`
+from `.env.local`, is idempotent, and creates the Auth user, the
+`admins/{uid}` flag, and the `valets/{uid}` profile. Every account after that
+is created in-app via Admin → Create Valet Account. A user who authenticates
+but has no staff profile is shown "Access Not Authorized" and cannot enter
+the portal.
+
 The legacy `valet-7bf14` project is untouched and serves as the archive of
 old history/reports. This is a clean break: staff accounts and historical
 data do **not** carry over (say the word if you want a one-off migration
