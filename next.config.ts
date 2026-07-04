@@ -15,6 +15,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
+  // Keep legacy HTML URLs working (previously handled in netlify.toml).
+  async redirects() {
+    return [
+      { source: "/guest.html", destination: "/guest", permanent: true },
+      { source: "/portal.html", destination: "/portal", permanent: true },
+      { source: "/index.html", destination: "/", permanent: true },
+      { source: "/login.html", destination: "/login", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

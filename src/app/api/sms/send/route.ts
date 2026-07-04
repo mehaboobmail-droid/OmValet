@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuth } from "@/firebase/admin";
-import { sendFast2Sms } from "@/services/fast2sms";
+import { sendSms } from "@/services/twilio";
 import { otpSchema, phoneSchema, ticketIdSchema } from "@/types/schemas";
 
 /**
- * Send the guest check-in SMS (ticket + OTP + guest link) via Fast2SMS.
+ * Send the guest check-in SMS (ticket + OTP + guest link) via Twilio.
  *
  * Security (fixes two legacy holes):
  *  - Requires a verified staff Firebase ID token — the legacy endpoint was
  *    publicly callable and could burn SMS credit.
- *  - The API key lives in FAST2SMS_API_KEY env — the legacy key was
+ *  - Credentials live in TWILIO_* env vars — the legacy key was
  *    hard-coded in the repo.
  *  - The message is composed server-side from validated fields only.
  */
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
   // Legacy message format, link composed server-side.
   const message = `Valet:Ticket ${ticketId} OTP ${otp} ${appUrl}/guest?ticket=${ticketId}`;
 
-  const result = await sendFast2Sms(phone, message);
+  const result = await sendSms(phone, message);
   if (result.error === "SMS service not configured on server") {
     return NextResponse.json(result, { status: 503 });
   }

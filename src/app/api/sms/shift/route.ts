@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuth } from "@/firebase/admin";
-import { sendFast2Sms } from "@/services/fast2sms";
+import { sendSms } from "@/services/twilio";
 import { phoneSchema } from "@/types/schemas";
 import { formatDateKey } from "@/utils/date";
 
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
   });
   const message = `Hi ${valetName}, your ${shiftName} shift is confirmed for ${prettyDate} (${start}–${end}). -Valet Mgmt`;
 
-  const result = await sendFast2Sms(phone, message);
+  const result = await sendSms(phone, message);
   return NextResponse.json(result, {
     status: result.success || result.error !== "SMS service not configured on server" ? 200 : 503,
   });
