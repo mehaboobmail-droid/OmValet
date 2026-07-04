@@ -5,8 +5,18 @@ import { guestLink } from "@/services/sms";
 /**
  * Printable white ticket slip (legacy design). Rendered inside the ticket
  * modal; the `print-slip` class scopes what window.print() outputs.
+ *
+ * `revealSecrets` gates the guest's retrieval credential (OTP) and checkout
+ * link. Operational fields stay visible so any valet can identify the car;
+ * only the person who checked it in (or an admin) sees the OTP.
  */
-export function TicketSlip({ car }: { car: Car }) {
+export function TicketSlip({
+  car,
+  revealSecrets = true,
+}: {
+  car: Car;
+  revealSecrets?: boolean;
+}) {
   return (
     <div className="print-slip relative overflow-hidden rounded-lg bg-white p-5 font-mono text-neutral-900">
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-gold via-gold-light to-gold" />
@@ -39,18 +49,24 @@ export function TicketSlip({ car }: { car: Car }) {
           One-Time Password
         </div>
         <div className="text-[28px] font-bold tracking-[0.3em] text-gold">
-          {car.otp}
+          {revealSecrets ? car.otp : "••••"}
         </div>
       </div>
 
-      <div className="mb-2.5 rounded border border-dashed border-neutral-300 bg-neutral-50 px-2.5 py-2">
-        <div className="mb-0.5 text-[7px] uppercase tracking-[0.2em] text-neutral-400">
-          Guest Checkout Link
+      {revealSecrets ? (
+        <div className="mb-2.5 rounded border border-dashed border-neutral-300 bg-neutral-50 px-2.5 py-2">
+          <div className="mb-0.5 text-[7px] uppercase tracking-[0.2em] text-neutral-400">
+            Guest Checkout Link
+          </div>
+          <div className="break-all text-[9px] text-neutral-500">
+            {guestLink(car.id)}
+          </div>
         </div>
-        <div className="break-all text-[9px] text-neutral-500">
-          {guestLink(car.id)}
+      ) : (
+        <div className="mb-2.5 rounded border border-dashed border-neutral-300 bg-neutral-50 px-2.5 py-2 text-center text-[8px] text-neutral-400">
+          OTP visible to the checking-in valet and admins only
         </div>
-      </div>
+      )}
 
       <div className="border-t border-dashed border-neutral-300 pt-2 text-center text-[8px] text-neutral-400">
         SMS sent to guest · Staff copy

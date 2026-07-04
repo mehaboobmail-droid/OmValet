@@ -28,9 +28,14 @@ export function sortCars(cars: CarsMap): Car[] {
 }
 
 export function CarsList({ cars }: { cars: CarsMap }) {
-  const { user, displayName } = useAuth();
+  const { user, displayName, role } = useAuth();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [printCar, setPrintCar] = useState<Car | null>(null);
+
+  // Only the car's own valet or an admin may reveal its OTP / resend its SMS.
+  const canManagePrinted =
+    printCar !== null &&
+    (role === "admin" || printCar.valetUid === user?.uid);
 
   const sorted = useMemo(() => sortCars(cars), [cars]);
 
@@ -97,6 +102,7 @@ export function CarsList({ cars }: { cars: CarsMap }) {
       <TicketModal
         car={printCar}
         smsSent
+        canManage={canManagePrinted}
         onClose={() => setPrintCar(null)}
       />
     </section>

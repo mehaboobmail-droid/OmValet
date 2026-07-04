@@ -13,11 +13,22 @@ type SmsState = "sent" | "not-sent" | "sending";
 interface TicketModalProps {
   car: Car | null;
   smsSent: boolean;
+  /**
+   * Whether the viewer may see the guest's OTP/link and resend the SMS
+   * (which reveals the phone). True for the checking-in valet and admins;
+   * false for other staff reprinting a colleague's ticket.
+   */
+  canManage?: boolean;
   onClose: () => void;
 }
 
 /** Post-check-in ticket: printable slip, SMS status, resend. */
-export function TicketModal({ car, smsSent, onClose }: TicketModalProps) {
+export function TicketModal({
+  car,
+  smsSent,
+  canManage = true,
+  onClose,
+}: TicketModalProps) {
   const [smsState, setSmsState] = useState<SmsState | null>(null);
   const effective: SmsState = smsState ?? (smsSent ? "sent" : "not-sent");
 
@@ -35,7 +46,7 @@ export function TicketModal({ car, smsSent, onClose }: TicketModalProps) {
       {car && (
         <>
           <div className="p-4">
-            <TicketSlip car={car} />
+            <TicketSlip car={car} revealSecrets={canManage} />
           </div>
           <div className="flex items-center justify-between px-5 pb-2 text-[11px] text-ink-muted">
             <span>
@@ -45,14 +56,16 @@ export function TicketModal({ car, smsSent, onClose }: TicketModalProps) {
                   ? "SMS sent to guest ✓"
                   : "SMS not sent — show ticket manually"}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleResend}
-              loading={effective === "sending"}
-            >
-              Resend SMS
-            </Button>
+            {canManage && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResend}
+                loading={effective === "sending"}
+              >
+                Resend SMS
+              </Button>
+            )}
           </div>
           <div className="flex gap-2 px-5 pb-5 pt-2">
             <Button className="flex-1" onClick={() => window.print()}>
