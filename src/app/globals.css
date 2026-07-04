@@ -1,26 +1,178 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ═══════════════════════════════════════════════════════════
+   Design tokens — luxury black & gold system
+   Consumed by Tailwind v4 as utilities (bg-surface-1, text-gold,
+   border-edge, shadow-card, ease-luxe, font-serif …)
+   ═══════════════════════════════════════════════════════════ */
+@theme {
+  /* Palette */
+  --color-obsidian: #080808;
+  --color-surface-1: #111111;
+  --color-surface-2: #1a1a1a;
+  --color-surface-3: #242424;
+  --color-edge: #2a2a2a;
+
+  --color-gold: #c9a84c;
+  --color-gold-light: #e8cc7a;
+  --color-gold-dim: #8a6f2e;
+
+  --color-ink: #f0ede8;
+  --color-ink-muted: #7a776f;
+  --color-ink-dim: #4a4744;
+
+  --color-success: #4caf7a;
+  --color-warning: #e8a43a;
+  --color-danger: #d94f4f;
+  --color-info: #4a8fd4;
+
+  /* Typography */
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* Motion */
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Depth */
+  --shadow-card: 0 24px 60px rgb(0 0 0 / 0.4);
+  --shadow-gold: 0 4px 20px rgb(201 168 76 / 0.3);
+  --shadow-modal: 0 40px 80px rgb(0 0 0 / 0.6);
+
+  /* Radii */
+  --radius-card: 0.875rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-obsidian);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    min-height: 100dvh;
+  }
+
+  ::selection {
+    background: rgb(201 168 76 / 0.3);
+    color: var(--color-ink);
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-edge);
+    border-radius: 2px;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.6);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility bg-ambient {
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgb(201 168 76 / 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgb(201 168 76 / 0.03) 0%, transparent 50%);
+}
+
+@utility text-label {
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+@utility shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface-2);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(201 168 76 / 0.06),
+      transparent
+    );
+    animation: shimmer-sweep 1.6s var(--ease-luxe) infinite;
+  }
+}
+
+@keyframes shimmer-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@utility animate-otp-shake {
+  animation: otp-shake 0.4s ease;
+}
+
+@keyframes otp-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-8px);
+  }
+  75% {
+    transform: translateX(8px);
+  }
+}
+
+/* Respect users who opt out of motion — collapses all animations and
+   transitions (framer-motion springs included) to near-instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print only the ticket slip when a slip is on screen (replaces the legacy
+   document.write popup). visibility keeps layout; fixed pulls it to the page. */
+@media print {
+  body {
+    background: white;
+  }
+
+  body:has(.print-slip) * {
+    visibility: hidden;
+  }
+
+  body:has(.print-slip) .print-slip,
+  body:has(.print-slip) .print-slip * {
+    visibility: visible;
+  }
+
+  body:has(.print-slip) .print-slip {
+    position: fixed;
+    left: 50%;
+    top: 24px;
+    transform: translateX(-50%);
+    width: 340px;
+    box-shadow: none;
+  }
 }

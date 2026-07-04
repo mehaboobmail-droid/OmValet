@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Om Valet — Premium Car Management
 
-## Getting Started
+Production rebuild of the luxury valet parking system (staff check-in, guest
+OTP retrieval, admin dashboard, shift scheduling). Wire-compatible with the
+legacy Firebase Realtime Database — no data migration required.
 
-First, run the development server:
+## Stack
+
+Next.js (App Router) · React · TypeScript strict · Tailwind CSS v4 ·
+Framer Motion · Firebase (Auth + RTDB + Admin SDK) · Zod · Zustand · Netlify
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
+npm run typecheck  # strict TS check
+npm run lint       # ESLint
+npm run build      # production build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Copy `.env.example` to `.env.local` and fill in the values. Server-only vars
+(`FIREBASE_SERVICE_ACCOUNT`, `FAST2SMS_API_KEY`, `GUEST_TOKEN_SECRET`) enable
+SMS, staff management and the guest flow's hardened path.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Deploying?** Follow [DEPLOYMENT.md](DEPLOYMENT.md) — it sequences env vars,
+verification, and the database-rules cutover safely.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Structure
 
-## Learn More
+```
+src/
+  app/          Next.js routes (login, portal, guest, api)
+  components/   ui/ (design-system kit) · brand/ · feature components
+  firebase/     client.ts (browser SDK) · admin.ts (server SDK) · paths.ts
+  hooks/        client state (toasts, auth, realtime subscriptions)
+  services/     business logic (check-in, checkout, reports, sms)
+  types/        domain model + zod schemas (mirrors the RTDB schema)
+  utils/        date (IST-aware) · slots · otp · cn
+  constants/    business constants
+database.rules.json   Hardened RTDB rules (deployed in the final milestone)
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Design system
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Black & gold luxury theme defined as Tailwind v4 tokens in
+`src/app/globals.css` — `bg-obsidian`, `bg-surface-1..3`, `border-edge`,
+`text-gold`, `text-ink(-muted|-dim)`, `shadow-card/gold/modal`,
+`ease-luxe/spring`, `font-serif` (Cormorant Garamond), `font-mono` (DM Mono).
