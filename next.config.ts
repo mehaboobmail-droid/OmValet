@@ -12,6 +12,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // firebase-admin uses dynamic requires / optional native deps that break when
+  // bundled into a serverless function. Load it as an external node module so
+  // Vercel traces it correctly (fixes 500s on all API routes).
+  serverExternalPackages: ["firebase-admin"],
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
