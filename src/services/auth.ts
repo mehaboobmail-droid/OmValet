@@ -1,4 +1,5 @@
 import {
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   type User,
@@ -54,6 +55,29 @@ export async function signInStaff(email: string, password: string): Promise<void
 
 export async function signOutStaff(): Promise<void> {
   await signOut(clientAuth());
+}
+
+/**
+ * Send a Firebase password-reset email. Privacy-preserving: resolves the same
+ * way whether or not the address is registered (never reveals which emails
+ * exist), surfacing an error only for a malformed address or rate limiting.
+ */
+export async function sendPasswordReset(email: string): Promise<void> {
+  try {
+    await sendPasswordResetEmail(clientAuth(), email);
+  } catch (error) {
+    const code =
+      typeof error === "object" && error !== null && "code" in error
+        ? String((error as { code: unknown }).code)
+        : "";
+    if (code === "auth/invalid-email") {
+      throw new Error("Enter a valid email address");
+    }
+    if (code === "auth/too-many-requests") {
+      throw new Error("Too many attempts. Try again later.");
+    }
+    // auth/user-not-found and others → swallow (don't reveal account existence).
+  }
 }
 
 /** Legacy-compatible friendly messages for Firebase auth error codes. */
