@@ -4,7 +4,8 @@ import "server-only";
  * Twilio SMS sender (Programmable Messaging REST API).
  * Credentials come from the environment — never the repo:
  *   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and either
- *   TWILIO_FROM_NUMBER (E.164) or TWILIO_MESSAGING_SERVICE_SID.
+ *   TWILIO_PHONE_NUMBER (E.164) or TWILIO_MESSAGING_SERVICE_SID.
+ *   (TWILIO_FROM_NUMBER is accepted as an alias for the phone number.)
  */
 const TWILIO_TIMEOUT_MS = 8000;
 const DEFAULT_COUNTRY_CODE = "91"; // India
@@ -32,7 +33,8 @@ function toE164(phone: string): string | null {
 export async function sendSms(phone: string, message: string): Promise<SmsResult> {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_FROM_NUMBER;
+  const fromNumber =
+    process.env.TWILIO_PHONE_NUMBER ?? process.env.TWILIO_FROM_NUMBER;
   const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
 
   if (!sid || !token || (!fromNumber && !messagingServiceSid)) {
