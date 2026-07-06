@@ -12,9 +12,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // firebase-admin uses dynamic requires / optional native deps that break when
-  // bundled into a serverless function. Load it as an external node module so
-  // Vercel traces it correctly (fixes 500s on all API routes).
+  // Keep firebase-admin as an external node module (not bundled) — it has
+  // dynamic requires and native deps. It pulls in an ESM-only dep (jose via
+  // jwks-rsa), so the serverless runtime must be Node >= 22.12 for require(esm);
+  // that is pinned in package.json engines.
   serverExternalPackages: ["firebase-admin"],
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
